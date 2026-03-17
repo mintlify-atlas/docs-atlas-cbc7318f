@@ -1,0 +1,71 @@
+{
+  "projectType": "saas",
+  "projectName": "Nextly",
+  "projectDescription": "An AI-powered Next.js application generator that transforms natural language prompts into production-ready, live-previewed Next.js apps using an agentic code execution pipeline.",
+  "theme": "almond",
+  "primaryColor": "#cc6444",
+  "lightColor": null,
+  "darkColor": null,
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "how-it-works"
+            ]
+          },
+          {
+            "group": "Using Nextly",
+            "pages": [
+              "guides/writing-prompts",
+              "guides/iterative-development",
+              "guides/live-preview",
+              "guides/downloading-code"
+            ]
+          },
+          {
+            "group": "Self-Hosting",
+            "pages": [
+              "self-hosting/overview",
+              "self-hosting/environment-variables",
+              "self-hosting/database-setup",
+              "self-hosting/deployment"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "reference/tech-stack",
+              "reference/ai-models",
+              "reference/limitations",
+              "reference/faq"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Prompt-to-code generation of full Next.js 15 apps with TypeScript and Tailwind CSS",
+    "Instant live preview via E2B sandboxed environments",
+    "Iterative development through conversational follow-up prompts",
+    "Multi-model AI support (Grok 4, GPT Codex, Gemini 2.5 Flash)",
+    "Background job processing with Inngest for reliable async code generation",
+    "User authentication and project management via Clerk",
+    "Rate limiting and usage tracking per user",
+    "Prompt enhancement AI to improve user inputs before generation"
+  ],
+  "publicApiSurface": [
+    "POST /api/inngest — Inngest event handler for background code generation jobs",
+    "tRPC router: messages — create, list, and stream messages per project",
+    "tRPC router: projects — create, list, update, and delete projects",
+    "tRPC router: usage — fetch current usage/rate-limit status",
+    "Inngest function: code-agent/run — triggers the AI code generation pipeline",
+    "Agent tools: terminal, createOrUpdateFiles, readFiles — sandbox interaction tools"
+  ]
+}
