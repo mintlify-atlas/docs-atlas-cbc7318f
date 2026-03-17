@@ -1,0 +1,79 @@
+---
+title: "Writing effective prompts"
+description: "Craft prompts that produce great Next.js apps on the first try"
+---
+
+The quality of your prompt is the single biggest factor in how closely Nextly's output matches what you have in mind. A vague prompt produces a vague app; a specific, structured prompt produces a polished, production-ready result.
+
+## How Nextly reads your prompt
+
+Before your prompt reaches the code-generation agent, it passes through a **prompt enhancer**. The enhancer rewrites your input to be clearer and more specific while preserving your original intent. It adds useful context, corrects grammar, and structures the request so the AI agent can act on it precisely — without inventing details you didn't ask for.
+
+For example:
+
+| Your input | What the enhancer produces |
+|---|---|
+| `Make a webpage with login` | `Create a responsive login page using Next.js with email/password authentication and a submit button.` |
+| `Write a blog post about AI` | `Write a detailed blog post explaining how AI works, including examples of machine learning, deep learning, and real-world applications.` |
+
+The enhancer handles ambiguity, but the more precise your original prompt, the better the final result.
+
+## Anatomy of a good prompt
+
+Every strong Nextly prompt covers four dimensions:
+
+**1. Layout description**
+Describe the page structure explicitly. Name the sections (hero, sidebar, footer, grid), their arrangement (two-column, full-width, sticky nav), and any nested relationships.
+
+**2. Color scheme**
+Name colors explicitly rather than using vague descriptors. Say `blue and white color scheme` or `dark theme with green accent colors` — not `looks good` or `clean design`.
+
+**3. Component list**
+List every UI element you want: stat cards, carousels, forms, tables, accordions, badges. The agent builds what it is told to build; omitting a component means it won't appear.
+
+**4. Interactivity**
+Describe dynamic behavior: `clicking a thumbnail updates the main image`, `status badges change color by type`, `form validates in real time`. The agent implements realistic interactivity when instructed.
+
+## Example prompts
+
+The following prompts demonstrate the level of detail that produces high-quality results. Each is taken directly from Nextly's own example library.
+
+<Accordion title="Landing Page">
+```text
+Create a modern SaaS landing page for a project management tool. Include a hero section with a gradient background, headline "Manage Projects Effortlessly", subheadline, and two CTA buttons (Start Free Trial, Watch Demo). Add a features section with 6 feature cards in a grid layout, each with an icon, title, and description. Include a pricing section with 3 tiers (Starter $9/mo, Pro $29/mo, Enterprise custom) showing features as checkmarks. Add a testimonials carousel with 5 customer reviews including avatar, name, company, and quote. Footer should have 4 columns: Product links, Company links, Resources, and social media icons. Use a blue and white color scheme with smooth animations on scroll.
+```
+</Accordion>
+
+<Accordion title="Portfolio">
+```text
+Build a portfolio website for a frontend developer. Create a hero section with my name "Alex Chen", tagline "Frontend Developer & UI Designer", and a profile image on the right. Add a projects section displaying 6 projects in a masonry grid layout. Each project card should have a thumbnail image, project title, tech stack tags (React, TypeScript, etc.), short description, and buttons for Live Demo and GitHub. Include an about section with a two-column layout: left side has my bio paragraph, right side lists technical skills grouped by category (Frontend, Backend, Tools) with progress bars showing proficiency. Add a contact section with a working form (name, email, message fields) and my email and LinkedIn links. Use a dark theme with green accent colors.
+```
+</Accordion>
+
+<Accordion title="Analytics Dashboard">
+```text
+Generate an analytics dashboard for an e-commerce admin panel. Create a sidebar navigation on the left with menu items (Dashboard, Orders, Products, Customers, Analytics, Settings) with icons. The main content area should have 4 stat cards at the top showing Total Revenue, Orders Today, Active Users, and Conversion Rate with numbers and percentage changes (up/down arrows). Below that, add a 2-column layout: left side has a placeholder for a line chart showing revenue over time, right side shows recent orders table with columns (Order ID, Customer, Amount, Status). Status should have colored badges (Pending yellow, Completed green, Cancelled red). Add a top navbar with search bar, notifications bell icon, and user profile dropdown. Use a light gray background with purple accents.
+```
+</Accordion>
+
+## Tips for better results
+
+- **Be specific about layout.** `Sidebar on the left with 5 nav items` is better than `a sidebar`.
+- **Name colors explicitly.** `Dark theme with green accent colors` is better than `looks professional`.
+- **Describe interactions.** `Clicking a thumbnail updates the main image` is better than `interactive gallery`.
+- **List every section.** If you want a footer, hero, and testimonials section, name all three. The agent builds what you describe.
+- **Specify content.** Provide real copy where it matters: headlines, button labels, nav item names, pricing tiers. Placeholder text is a sign of a prompt that left too much to chance.
+- **Name your data shape.** For tables or cards, describe the columns or fields: `Order ID, Customer, Amount, Status`.
+
+## What to avoid
+
+<Warning>
+**Avoid multi-page enterprise apps in a single prompt.**
+Nextly excels at focused, single-page applications. Prompts that request complex multi-page apps with intricate business logic, multi-step workflows, or extensive backend integration are likely to produce incomplete results. Keep each generation scoped to one clear interface or feature. Use [iterative development](/guides/iterative-development) to add complexity incrementally.
+</Warning>
+
+Other things to avoid:
+
+- Vague quality descriptors: `nice`, `modern`, `clean`, `beautiful` — these give the agent no actionable information.
+- Requesting external API integrations — the agent uses static/local data only.
+- Asking for image URLs — use color placeholders and emojis instead.

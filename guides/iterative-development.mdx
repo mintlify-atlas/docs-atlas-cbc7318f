@@ -1,0 +1,58 @@
+---
+title: "Iterative development"
+description: "Refine your app through conversational follow-up prompts"
+---
+
+Nextly supports iterative, conversational development. After your initial generation, you can send follow-up prompts to change colors, add sections, adjust layouts, or fix anything that isn't right — without starting over.
+
+## How conversation history works
+
+Each project maintains a message history. When the agent processes a new prompt, it loads the **last 5 messages** from the project's conversation as context. This means the agent understands what was previously built and can apply targeted changes rather than regenerating from scratch.
+
+The 5-message window is enough for focused refinement. It keeps the agent's context relevant and avoids confusion from very early messages that no longer reflect the current state of the app.
+
+## A worked example
+
+Here is a typical iterative session for a dashboard app:
+
+**Step 1 — Initial generation**
+
+You send:
+```text
+Generate an analytics dashboard with a sidebar, 4 stat cards (Revenue, Orders, Users, Conversion Rate), a revenue line chart on the left, and a recent orders table on the right. Use a light gray background with purple accents.
+```
+
+Nextly generates the full dashboard and shows it in the live preview.
+
+**Step 2 — Review the result**
+
+You open the preview and notice the sidebar feels too wide and the stat cards need more spacing.
+
+**Step 3 — Refine with a follow-up**
+
+You send:
+```text
+Narrow the sidebar to 200px and add more vertical padding between the stat cards.
+```
+
+The agent has the previous 5 messages in context, understands what the sidebar and stat cards are, and makes only those changes.
+
+**Step 4 — Add a new feature**
+
+You send:
+```text
+Add a date range picker in the top navbar that filters the revenue chart.
+```
+
+The agent adds the component and wires it to the chart state, building on top of the existing code.
+
+## Tips for effective iteration
+
+- **One change at a time.** The more focused your follow-up, the more predictable the result. Combining five unrelated changes in one prompt increases the chance of regressions.
+- **Reference specific elements.** Use the same vocabulary as your original prompt: `the hero section`, `the orders table`, `the sidebar nav`. Vague references like `the thing on the left` can be misinterpreted.
+- **Use directional language.** Phrases like `change the hero background to slate-900`, `add a contact form below the features section`, and `replace the progress bars with tag chips` give the agent clear, actionable instructions.
+- **Confirm before moving on.** Check the preview after each follow-up before sending the next one. Catching an unintended change early is easier than unraveling several compounded ones.
+
+<Note>
+Large structural changes — such as completely redesigning the layout, switching from a single-column to a sidebar layout, or adding an entirely new page — work better as new projects than as follow-up prompts. The agent's context window is optimized for targeted refinements. When the change is large enough that you'd essentially be starting over, start a new project with a fresh prompt that incorporates everything you've learned.
+</Note>

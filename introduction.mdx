@@ -1,0 +1,53 @@
+---
+title: Introduction
+description: Nextly is an AI-powered SaaS that turns natural language prompts into production-ready Next.js applications.
+---
+
+Nextly takes a plain-language description of an app and returns working Next.js code with a live preview URL — no templates, no boilerplate, no manual scaffolding.
+
+You describe what you want to build. Nextly spins up a sandboxed environment, runs an AI agent that writes and iterates on real code, and hands you a live preview alongside a downloadable codebase.
+
+## What Nextly generates
+
+Every project Nextly produces is a full Next.js 15 application with:
+
+- **TypeScript** throughout — no implicit `any`, clean types
+- **Tailwind CSS** for all styling — no plain CSS or external stylesheets
+- **Shadcn UI** components pre-installed and used idiomatically
+- App Router conventions, semantic HTML, and accessible markup by default
+
+The agent writes real, production-quality files — not stubs or demos. It installs npm packages it needs, reads existing files before modifying them, and iterates until the app matches your description.
+
+## How the stack fits together
+
+| Layer | Technology | Role |
+|---|---|---|
+| Framework | Next.js 15 | App Router, server components, routing |
+| Language | TypeScript | Type-safe code throughout |
+| Styling | Tailwind CSS | Utility-first CSS |
+| UI components | Shadcn UI | Pre-installed component library |
+| Auth | Clerk | User accounts and session management |
+| Background jobs | Inngest | Durable, event-driven generation pipeline |
+| Code execution | E2B | Isolated sandbox where the agent writes and runs code |
+| Database | PostgreSQL + Prisma | Projects, messages, and generated fragments |
+
+## Where to go next
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Go from prompt to live preview in under 5 minutes.
+  </Card>
+  <Card title="How it works" icon="cpu" href="/how-it-works">
+    Understand the agentic pipeline behind every generation.
+  </Card>
+  <Card title="Writing prompts" icon="pen-nib" href="/guides/writing-prompts">
+    Learn how to write prompts that produce better results.
+  </Card>
+  <Card title="Self-hosting" icon="server" href="/self-hosting/overview">
+    Run Nextly on your own infrastructure.
+  </Card>
+</CardGroup>
+
+<Note>
+  Nextly is in **beta**. Generated previews expire after 10–30 minutes due to sandbox budget constraints. Download your code before the preview goes down if you need to keep it.
+</Note>

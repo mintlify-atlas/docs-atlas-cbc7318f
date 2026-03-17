@@ -1,0 +1,135 @@
+---
+title: How it works
+description: Inside Nextly's agentic code generation pipeline.
+---
+
+When you submit a prompt, Nextly doesn't call an LLM and paste the response into files. It runs a multi-step agentic pipeline where the AI reads, writes, and executes code in a real sandboxed environment — iterating until the app is complete.
+
+Here is a walkthrough of every stage.
+
+## The pipeline
+
+<Steps>
+  <Step title="Inngest event is fired">
+    Submitting a prompt triggers a `code-agent/run` event via Inngest. The event payload carries the user's prompt, the target project ID, and the selected AI model.
+
+    ```typescript
+    // Event payload shape
+    {
+      event: "code-agent/run",
+      data: {
+        value: string,       // the user's prompt
+        projectId: string,   // UUID of the project
+        model: "grok" | "codex" | "gemini"
+      }
+    }
+    ```
+
+    Inngest durably queues and executes the job as a background function, so the pipeline survives network interruptions and server restarts without losing state.
+  </Step>
+
+  <Step title="E2B sandbox is created">
+    The Inngest function's first step creates an isolated [E2B](https://e2b.dev) sandbox from the `vedant-lovable-test-1` template — a pre-configured Next.js 15 environment with Tailwind CSS, Shadcn UI, TypeScript, and a running dev server on port 3000.
+
+    ```typescript
+    const sandbox = await Sandbox.create("vedant-lovable-test-1");
+    await sandbox.setTimeout(SANDBOX_TIMEOUT); // 30 minutes
+    ```
+
+    `SANDBOX_TIMEOUT` is set to `60_000 * 10 * 3` milliseconds (30 minutes). The sandbox ID is saved so every subsequent step can reconnect to the same environment.
+  </Step>
+
+  <Step title="Previous messages are loaded">
+    To support iterative development, the function fetches the five most recent messages from the project's conversation history and injects them into the agent's initial state. This gives the agent context about what has already been built.
+
+    ```typescript
+    const messages = await prisma.message.findMany({
+      where: { projectId: event.data.projectId },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+    });
+    ```
+  </Step>
+
+  <Step title="The code agent runs">
+    The core generation step is an `@inngest/agent-kit` network containing a single `codeAgent`. The network runs with `maxIter: 15` — the agent can make up to 15 LLM calls before the loop terminates.
+
+    The agent is given a detailed system prompt (`src/prompt.ts`) that instructs it to behave like a senior software engineer inside the sandbox. It writes real files, installs packages, and follows strict file-path and import conventions.
+
+    The router function exits the loop as soon as the agent emits a `<task_summary>` tag in its response, which signals that all work is complete.
+
+    ```typescript
+    const network = createNetwork<AgentState>({
+      name: "coding-agent-network",
+      agents: [codeAgent],
+      maxIter: 15,
+      router: async ({ network }) => {
+        if (network.state.data.summary) return; // stop
+        return codeAgent;                       // continue
+      },
+    });
+    ```
+  </Step>
+
+  <Step title="Agent tools: terminal, createOrUpdateFiles, readFiles">
+    The agent has three tools available inside the sandbox:
+
+    **`terminal`** — runs arbitrary shell commands. The agent uses this to install npm packages (`npm install <package> --yes`) before importing them. It never runs `npm run dev` or `npm run build` — the dev server is already running.
+
+    **`createOrUpdateFiles`** — writes one or more files to the sandbox filesystem. Each call takes an array of `{ path, content }` objects. Written files are also recorded in the agent's in-memory state so subsequent iterations know what has been created.
+
+    ```typescript
+    // Tool parameters
+    z.object({
+      files: z.array(
+        z.object({
+          path: z.string(),    // relative, e.g. "app/page.tsx"
+          content: z.string(),
+        })
+      ),
+    })
+    ```
+
+    **`readFiles`** — reads files from the sandbox by absolute path. Used when the agent needs to inspect an existing file (e.g., a Shadcn UI component) before modifying or extending it.
+  </Step>
+
+  <Step title="Post-processing agents run">
+    After the main coding loop completes, two lightweight agents process the `<task_summary>` the code agent produced:
+
+    **`fragment-title-generator`** — generates a short (max 3 words, title case) label for the generated fragment, e.g. `"Landing Page"` or `"Chat Widget"`.
+
+    **`response-generator`** — writes a 1–3 sentence human-friendly message summarising what was built, displayed in the project thread as the assistant's reply.
+
+    Both agents run against the summary text using a smaller, faster model.
+  </Step>
+
+  <Step title="Sandbox URL is retrieved and result is stored">
+    The function calls `sandbox.getHost(3000)` to get the public hostname of the running dev server, then constructs the preview URL:
+
+    ```typescript
+    const host = sandbox.getHost(3000);
+    const sandboxUrl = `https://${host}`;
+    ```
+
+    A `Message` record of type `RESULT` is written to the database, with a linked `Fragment` record that stores the sandbox URL, the generated title, and the full file map (`files: Json`).
+
+    If the agent never produced a summary or no files were written, the message is stored as type `ERROR` instead.
+  </Step>
+</Steps>
+
+## Data model
+
+The pipeline persists data across three Prisma models:
+
+- **`Project`** — created when you start a new project; scoped to a Clerk `userId`.
+- **`Message`** — one record per user prompt and per assistant response; carries `role` (`USER` | `ASSISTANT`) and `type` (`RESULT` | `ERROR`).
+- **`Fragment`** — linked one-to-one with a result `Message`; stores `sandboxUrl`, `title`, and the `files` JSON map of all generated file paths and their content.
+
+## Limits to know
+
+| Limit | Value | Why |
+|---|---|---|
+| Max agent iterations | 15 | Prevents runaway loops and cost overruns |
+| Sandbox timeout | 30 minutes | E2B sandbox budget constraint |
+| Preview expiry | 10–30 minutes | Sandbox is shut down after timeout |
+| Message history window | Last 5 messages | Context window management |

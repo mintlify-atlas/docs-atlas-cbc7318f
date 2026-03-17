@@ -1,0 +1,58 @@
+---
+title: "Downloading your code"
+description: "Save and export your generated Next.js project"
+---
+
+Every generation Nextly produces is stored as a **fragment** — a snapshot of all the files written during that generation run. You can download your fragment as a zip at any time, even after the live preview has expired.
+
+## What is stored in a fragment
+
+A fragment contains the `files` field: a JSON map of relative file paths to their full content. Every file written by the `createOrUpdateFiles` tool during generation is included. This covers:
+
+- `app/page.tsx` and any other pages or route files
+- Components created under `app/`
+- Utility files under `lib/`
+- Any other source files the agent created or modified
+
+## What is NOT included
+
+<Warning>
+**npm packages installed via the `terminal` tool during generation are not bundled in the zip.**
+
+The sandbox installs packages live into `node_modules`, but `node_modules` is never stored in the fragment. After downloading, you must run `npm install` to restore all dependencies before the project will run.
+</Warning>
+
+`package.json` reflects the packages the agent installed, so `npm install` will pull in everything that was used during generation.
+
+## How to download your code
+
+1. Open your project in Nextly.
+2. Locate the generation result in the conversation — each result has an associated fragment with a title (e.g., `Landing Page`, `Dashboard`).
+3. Click the download button on the fragment to export a zip of all generated files.
+
+## Getting your code running locally
+
+<Steps>
+  <Step title="Extract the zip">
+    Unzip the downloaded archive into a new directory on your machine.
+  </Step>
+  <Step title="Install dependencies">
+    Run the following command in the project root to install all packages listed in `package.json`:
+    ```bash
+    npm install
+    ```
+  </Step>
+  <Step title="Set up environment variables">
+    If your app uses authentication, a database, or other services, create a `.env.local` file in the project root and add the required variables. Check `package.json` or any `lib/` files for clues about what is expected.
+  </Step>
+  <Step title="Start the development server">
+    ```bash
+    npm run dev
+    ```
+    Open `http://localhost:3000` in your browser. The app should look and behave identically to the Nextly preview.
+  </Step>
+</Steps>
+
+<Tip>
+The easiest way to deploy your downloaded project is [Vercel](https://vercel.com). Push your code to a GitHub repository, import it in the Vercel dashboard, and your app is live in minutes — with zero additional configuration for Next.js projects.
+</Tip>

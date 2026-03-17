@@ -1,0 +1,175 @@
+---
+title: Database setup
+description: Set up PostgreSQL and run Prisma migrations for Nextly.
+---
+
+Nextly uses PostgreSQL as its database and [Prisma](https://prisma.io) as the ORM. The schema defines four models: `Project`, `Message`, `Fragment`, and `Usage`.
+
+## Schema overview
+
+Before running migrations, here is what each model stores:
+
+| Model | Purpose |
+|---|---|
+| `Project` | Top-level container for a user's generation session. Belongs to a Clerk user ID. |
+| `Message` | Individual messages in a project thread — user prompts and assistant replies. |
+| `Fragment` | A generated code artifact attached to an assistant message. Stores the sandbox URL, title, and all files as JSON. |
+| `Usage` | Rate-limit counters keyed by user. Tracks points and optional expiry. |
+
+### Full schema
+
+```prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id        String   @id @default(uuid())
+  name      String
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages Message[]
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+}
+
+enum MessageType {
+  RESULT
+  ERROR
+}
+
+model Message {
+  id        String      @id @default(uuid())
+  content   String
+  role      MessageRole
+  type      MessageType
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  fragment  Fragment?
+}
+
+model Fragment {
+  id        String  @id @default(uuid())
+  messageId String  @unique
+  message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  sandboxUrl String
+  title      String
+  files      Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Usage {
+  key    String    @id
+  points Int
+  expire DateTime?
+}
+```
+
+---
+
+## Setup steps
+
+<Steps>
+  <Step title="Create a PostgreSQL database">
+    Create a database named `nextly` (or any name you prefer) on your PostgreSQL server.
+
+    **Local PostgreSQL:**
+
+    ```bash
+    psql -U postgres -c "CREATE DATABASE nextly;"
+    ```
+
+    **Docker (run PostgreSQL in a container):**
+
+    ```bash
+    docker run \
+      --name nextly-postgres \
+      -e POSTGRES_USER=postgres \
+      -e POSTGRES_PASSWORD=secret \
+      -e POSTGRES_DB=nextly \
+      -p 5432:5432 \
+      -d postgres:16
+    ```
+
+    If you are using a managed provider (Neon, Supabase, Railway, AWS RDS), create the database through their dashboard and copy the connection string they provide.
+  </Step>
+
+  <Step title="Set DATABASE_URL in .env">
+    Add your connection string to the `.env` file in the project root:
+
+    ```env
+    DATABASE_URL="postgresql://postgres:secret@localhost:5432/nextly"
+    ```
+
+    Replace `postgres`, `secret`, `localhost`, `5432`, and `nextly` with your actual credentials and host.
+
+    <Tip>
+      If your password contains special characters (such as `@`, `/`, or `:`), percent-encode them. For example, `p@ss` becomes `p%40ss`.
+    </Tip>
+  </Step>
+
+  <Step title="Generate the Prisma client">
+    Run `prisma generate` to produce the type-safe Prisma client from your schema:
+
+    ```bash
+    npx prisma generate
+    ```
+
+    This command reads `prisma/schema.prisma` and writes the generated client to `node_modules/@prisma/client`. It does not touch the database.
+
+    <Note>
+      `prisma generate` is also run automatically as part of `npm install` via the `postinstall` script in `package.json`.
+    </Note>
+  </Step>
+
+  <Step title="Push the schema to the database">
+    Apply the full schema to your database in one command:
+
+    ```bash
+    npx prisma db push
+    ```
+
+    This creates all tables, enums, and indexes defined in `schema.prisma`. It is the recommended approach for initial setup and development.
+
+    For production deployments where you need a repeatable migration history, use the migration workflow instead:
+
+    ```bash
+    npx prisma migrate deploy
+    ```
+
+    `migrate deploy` applies all pending migrations from `prisma/migrations/` in order. Use this in CI/CD pipelines.
+  </Step>
+</Steps>
+
+---
+
+## Browsing your data
+
+Prisma Studio is a browser-based GUI for inspecting and editing your database records. It is useful for debugging generation results or manually clearing rate-limit state.
+
+```bash
+npx prisma studio
+```
+
+This opens Prisma Studio at `http://localhost:5555`. All four models — `Project`, `Message`, `Fragment`, and `Usage` — are visible and editable.
+
+<Warning>
+  Do not run Prisma Studio in production with public network access. It provides direct read and write access to your database without authentication.
+</Warning>

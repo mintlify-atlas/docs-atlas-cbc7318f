@@ -1,0 +1,100 @@
+---
+title: "FAQ"
+description: "Frequently asked questions about Nextly"
+---
+
+<AccordionGroup>
+
+  <Accordion title="Is Nextly free to use?">
+    Nextly is fully **open source** and free to self-host. The hosted version at [nextly.live](https://nextly.live) is also free during the beta period — it is powered by free-tier AI models (currently Grok 4 Fast via OpenRouter) so there is no API cost passed to users.
+
+    If you self-host Nextly, you will need to supply your own API keys: `OPENAI_API_KEY`, `OPENAI_API_BASE` (pointing to OpenRouter or another compatible endpoint), a Clerk publishable and secret key, and an E2B API key. The application-level rate limits are configurable in the source code.
+  </Accordion>
+
+  <Accordion title="What happens to my generated code?">
+    Every successful generation is saved as a `Fragment` record in your PostgreSQL database. The `Fragment` model stores three things:
+
+    - **`files`** — a JSON map of all file paths to their content (the complete source code of the generated app)
+    - **`sandboxUrl`** — the live preview URL (valid for 10–30 minutes)
+    - **`title`** — a short, auto-generated title describing what was built
+
+    Fragments are linked to a `Message`, which belongs to a `Project`. You can access all your fragments from the project dashboard at any time. The sandbox URL expires, but the file contents are stored permanently until you delete the project.
+  </Accordion>
+
+  <Accordion title="Why does generation take so long?">
+    Three factors combine to make generation slower than a typical API call:
+
+    1. **Inngest background jobs** — generation runs as an async Inngest function, not a synchronous HTTP request. There is inherent queuing overhead before the job starts executing.
+    2. **Free-tier AI model rate limits** — the default Grok 4 Fast model is served on the free tier, which enforces per-minute token limits. The agent can issue up to 15 tool-call iterations, and each one may be queued behind upstream rate limiting.
+    3. **E2B sandbox startup** — the sandbox must be created and the Next.js dev server must reach a ready state before the agent can start writing and hot-reloading files.
+
+    In the best case, a simple generation completes in 1–3 minutes. Complex, multi-page apps can take up to 10 minutes. See [Limitations](/reference/limitations) for the full breakdown.
+  </Accordion>
+
+  <Accordion title="Can I use my own AI model?">
+    Yes. When self-hosting, set the following environment variables to point at any OpenAI-compatible endpoint:
+
+    ```bash
+    OPENAI_API_BASE=https://openrouter.ai/api/v1   # or any compatible base URL
+    OPENAI_API_KEY=your_api_key_here
+    ```
+
+    Then update the `modelMapping` object in `src/inngest/functions.ts` to include your model's identifier as a new key. You can also set `OPENAI_FREE2_MODEL` to change the model used by the fragment title and response generator agents.
+
+    Any provider that exposes an OpenAI-compatible `/chat/completions` endpoint — including OpenRouter, Together AI, Groq, Fireworks, or a local Ollama instance — will work.
+  </Accordion>
+
+  <Accordion title="Why did my preview expire?">
+    Live previews are served from [E2B](https://e2b.dev) sandboxes, which are ephemeral by design. The sandbox timeout is set to **30 minutes** (`SANDBOX_TIMEOUT = 1,800,000 ms` in `src/inngest/types.ts`). Once the sandbox is terminated, the preview URL returns a 404.
+
+    Your code is **not lost** — the full source files are stored permanently in the `Fragment` record in your database. Download the code from the project dashboard before the preview expires, or redeploy it to a permanent host like Vercel at any time.
+  </Accordion>
+
+  <Accordion title="Does Nextly support multi-page apps?">
+    Yes. The agent works inside a Next.js 15 App Router environment, so it can create multiple route segments under `app/` (e.g. `app/about/page.tsx`, `app/blog/page.tsx`). Navigation between pages using Next.js `<Link>` components is fully supported.
+
+    That said, multi-page apps are more likely to hit the 15-iteration limit or produce inconsistencies across pages when all pages are requested in a single prompt. For best results, generate the main page first, then add additional pages one at a time through follow-up prompts.
+  </Accordion>
+
+  <Accordion title="What AI models are available?">
+    Nextly currently supports three models:
+
+    - **Grok** (`x-ai/grok-4-fast:free`) — xAI Grok 4 Fast, the default during beta, free tier
+    - **Codex** (`openai/gpt-5-codex`) — OpenAI GPT-5 Codex, optimised for code accuracy
+    - **Gemini** (`google/gemini-2.5-flash`) — Google Gemini 2.5 Flash, fast and capable for large-context tasks
+
+    See the [AI models](/reference/ai-models) reference page for a full comparison, agent parameters, and instructions on adding custom models when self-hosting.
+  </Accordion>
+
+  <Accordion title="How do I report bugs or contribute?">
+    Nextly is open source. The repository is at [https://github.com/vedantxn/nextly](https://github.com/vedantxn/nextly).
+
+    - **Bug reports** — open an issue on GitHub with steps to reproduce, the prompt you used, and the model selected.
+    - **Feature requests** — open a GitHub issue tagged with `enhancement`.
+    - **Pull requests** — contributions are welcome. Fork the repository, create a branch, and open a PR against `main`.
+  </Accordion>
+
+  <Accordion title="Can I deploy generated apps to Vercel?">
+    Yes. Every generated app is a standard Next.js 15 App Router project. To deploy it:
+
+    1. Download the generated code from your project dashboard.
+    2. Initialise a Git repository and push it to GitHub.
+    3. Import the repository into [Vercel](https://vercel.com).
+    4. Set any required environment variables in the Vercel project settings (e.g. database connection strings if the app uses a backend).
+
+    The generated code uses only static/local data by default — no external API calls are made — so a basic deployment usually requires no additional configuration.
+  </Accordion>
+
+  <Accordion title="What is the tech stack of generated apps?">
+    Every app generated by Nextly uses the same fixed stack:
+
+    - **Framework** — Next.js 15 with the App Router
+    - **Language** — TypeScript (`.tsx` / `.ts`)
+    - **Styling** — Tailwind CSS v4 (no plain CSS or SCSS)
+    - **Components** — Shadcn UI, pre-installed and imported from `@/components/ui/*`
+    - **Icons** — Lucide React
+
+    See the [Tech stack](/reference/tech-stack) reference page for full details on the sandbox environment, file conventions, and what the agent is and is not allowed to modify.
+  </Accordion>
+
+</AccordionGroup>

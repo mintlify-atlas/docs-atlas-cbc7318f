@@ -1,0 +1,41 @@
+---
+title: "Live preview"
+description: "View and share your generated app instantly via E2B sandbox"
+---
+
+Every time Nextly generates or updates your app, it automatically deploys the result into a live, sandboxed environment. You get a real URL — no configuration, no manual deployment.
+
+## How the sandbox works
+
+Nextly uses [E2B](https://e2b.dev) to spin up an isolated sandbox environment for each generation. Inside the sandbox:
+
+- The Next.js development server runs on **port 3000** with hot reload enabled.
+- The agent writes files directly into the sandbox filesystem and installs dependencies via the terminal.
+- Once generation is complete, the sandbox URL is captured and stored with the generated fragment.
+
+The preview URL takes the form:
+```
+https://<sandbox-host>
+```
+
+This URL is accessible from any browser and can be shared with anyone who has the link.
+
+## What you can do with the preview
+
+- **Test interactivity.** Click buttons, fill out forms, toggle states, and interact with the app exactly as a real user would. The preview runs live Next.js code, not a static screenshot.
+- **Share with stakeholders.** Send the URL to teammates, clients, or collaborators for quick feedback. No login or special access is required to view the preview.
+- **Check responsiveness.** Resize your browser or use your browser's device emulation tools to verify the layout at different screen sizes.
+
+<Tip>
+Share the preview URL in a team chat or design review to get fast feedback before downloading and extending the code. Stakeholders can interact with the real app rather than reviewing a screenshot.
+</Tip>
+
+## Preview expiry
+
+<Warning>
+**Preview URLs expire after 10–30 minutes** due to sandbox budget constraints. Once a sandbox shuts down, the URL becomes unavailable and cannot be restored.
+
+If you want to keep your app, [download your code](/guides/downloading-code) before the preview expires. The generated files are stored in the fragment and can be downloaded at any time, even after the preview URL is gone.
+</Warning>
+
+The expiry window is intentionally short. Nextly is designed for rapid iteration — generate, review, download, and move to your own environment for longer-term development.

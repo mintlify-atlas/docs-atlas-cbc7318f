@@ -1,80 +1,108 @@
 ---
 title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+description: "Get from a natural language prompt to a live Next.js app in minutes."
 ---
 
-## Get started in three steps
+This guide walks you through creating your first app with Nextly — from signing in to viewing a live preview of your generated Next.js application.
 
-Get your documentation site running locally and make your first customization.
+<Steps>
+  <Step title="Sign up or sign in">
+    Go to [nextly.live](https://nextly.live) and create an account. Nextly uses Clerk for authentication — you can sign up with email or an OAuth provider.
 
-### Step 1: Set up your local environment
+    Once signed in, you land on the project dashboard where all your generated apps are listed.
+  </Step>
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+  <Step title="Create a new project">
+    Click **New Project** on the dashboard. You'll be taken to the project workspace with a prompt input field at the bottom of the screen.
 
-### Step 2: Deploy your changes
+    Each project maintains its own conversation history, so your follow-up prompts will have context from previous generations.
+  </Step>
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+  <Step title="Write your prompt">
+    Type a description of the app you want to build. Be specific about layout, colors, and interactions. Here's an example to get you started:
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+    ```text
+    Create a modern SaaS landing page for a project management tool. Include a hero
+    section with a gradient background, headline "Manage Projects Effortlessly",
+    subheadline, and two CTA buttons (Start Free Trial, Watch Demo). Add a features
+    section with 6 feature cards in a grid layout, each with an icon, title, and
+    description. Include a pricing section with 3 tiers (Starter $9/mo, Pro $29/mo,
+    Enterprise custom). Footer with 4 columns: Product, Company, Resources, social
+    icons. Use a blue and white color scheme with smooth animations on scroll.
+    ```
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+    <Tip>
+      The more specific your prompt, the better the output. Name your colors explicitly, describe the layout structure, and list the components you need. See [Writing effective prompts](/guides/writing-prompts) for detailed guidance.
+    </Tip>
+  </Step>
 
-### Step 3: Go live
+  <Step title="Select an AI model">
+    Before submitting, choose the AI model for your generation:
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+    | Model | Key | Best for |
+    |---|---|---|
+    | Grok 4 Fast | `grok` | Fast generation, free tier |
+    | GPT-5 Codex | `codex` | Complex logic and code quality |
+    | Gemini 2.5 Flash | `gemini` | Balanced speed and capability |
+
+    Grok 4 is the default and recommended model for beta users.
+  </Step>
+
+  <Step title="Submit and wait">
+    Click **Generate**. Nextly sends your prompt to the generation pipeline:
+
+    1. An Inngest background job starts — this ensures reliable processing even if the request takes a while
+    2. An E2B sandbox environment spins up
+    3. The AI agent writes your Next.js app files iteratively (up to 15 rounds)
+    4. The dev server starts on port 3000 inside the sandbox
+
+    Generation typically takes **2–10 minutes** depending on complexity and model load.
+
+    <Info>
+      You can leave the page and come back — the generation runs in the background and your project will update when it's ready.
+    </Info>
+  </Step>
+
+  <Step title="View the live preview">
+    Once generation completes, a live preview URL appears in the chat panel. The URL looks like:
+
+    ```
+    https://<sandbox-id>.e2b.app
+    ```
+
+    Click it to open your running Next.js app. You can interact with it, test responsiveness, and share the URL with teammates.
+
+    <Warning>
+      Preview URLs expire after **10–30 minutes** due to sandbox budget constraints. Download your code immediately if you want to keep it — see [Downloading your code](/guides/downloading-code).
+    </Warning>
+  </Step>
+
+  <Step title="Iterate with follow-up prompts">
+    Not quite right? Type a follow-up in the same project:
+
+    ```text
+    Change the hero background to a dark navy gradient. Add a sticky navbar
+    that changes background color on scroll. Make the CTA buttons use orange
+    instead of blue.
+    ```
+
+    The agent has context from the previous generation and will update the existing files. See [Iterative development](/guides/iterative-development) for tips on effective follow-ups.
+  </Step>
+</Steps>
 
 ## Next steps
 
-Now that you have your docs running, explore these key features:
-
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="Writing effective prompts" icon="pen-nib" href="/guides/writing-prompts">
+    Learn the anatomy of a good prompt and see real examples for landing pages, dashboards, and more.
+  </Card>
+  <Card title="Iterative development" icon="arrows-rotate" href="/guides/iterative-development">
+    Refine your app through conversational follow-up prompts.
+  </Card>
+  <Card title="Downloading your code" icon="download" href="/guides/downloading-code">
+    Save your generated project and get it running locally.
+  </Card>
+  <Card title="Self-hosting" icon="server" href="/self-hosting/overview">
+    Run Nextly on your own infrastructure with your own API keys.
+  </Card>
 </CardGroup>
-
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>

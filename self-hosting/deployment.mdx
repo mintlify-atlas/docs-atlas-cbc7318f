@@ -1,0 +1,221 @@
+---
+title: Deployment
+description: Deploy Nextly to production on Vercel, Docker, or a Node.js server.
+---
+
+Nextly is a standard Next.js 15 application. You can deploy it anywhere that runs Node.js. This page covers three approaches: Vercel (easiest), Docker, and a plain Node.js server.
+
+<Warning>
+  All environment variables must be configured before you deploy. A missing `DATABASE_URL`, `CLERK_SECRET_KEY`, `OPENAI_API_KEY`, `E2B_API_KEY`, `INNGEST_EVENT_KEY`, or `INNGEST_SIGNING_KEY` will cause the application to fail at runtime. See [Environment variables](/self-hosting/environment-variables) for the full list.
+</Warning>
+
+## Choose a deployment method
+
+<Tabs>
+  <Tab title="Vercel">
+    Vercel is the recommended deployment target. It handles builds, CDN distribution, and serverless function routing automatically.
+
+    ### 1. Install the Vercel CLI
+
+    ```bash
+    npm install -g vercel
+    ```
+
+    ### 2. Deploy
+
+    From the project root, run:
+
+    ```bash
+    vercel deploy
+    ```
+
+    Follow the prompts to link the project to your Vercel account. For production deployments:
+
+    ```bash
+    vercel deploy --prod
+    ```
+
+    ### 3. Set environment variables
+
+    In the Vercel dashboard, go to your project → **Settings** → **Environment Variables** and add every variable from your `.env` file.
+
+    Alternatively, use the CLI to import them all at once from your local `.env`:
+
+    ```bash
+    vercel env pull .env.production
+    ```
+
+    Or push existing values:
+
+    ```bash
+    vercel env add DATABASE_URL production
+    ```
+
+    ### 4. Configure the Inngest webhook
+
+    After your first deployment completes, register your app with Inngest:
+
+    1. Log in to [app.inngest.com](https://app.inngest.com)
+    2. Go to **Apps** → **Add App**
+    3. Enter your production URL as: `https://your-domain.vercel.app/api/inngest`
+    4. Click **Connect**
+
+    Inngest will verify the signing key and start delivering events to your deployment. Background jobs will not run until this step is complete.
+  </Tab>
+
+  <Tab title="Docker">
+    If a `Dockerfile` is not already present in the repository root, create one. Below is a production-ready multi-stage Dockerfile for Next.js:
+
+    ```dockerfile
+    # Stage 1: install dependencies
+    FROM node:20-alpine AS deps
+    WORKDIR /app
+    COPY package.json package-lock.json* ./
+    RUN npm ci
+
+    # Stage 2: build the application
+    FROM node:20-alpine AS builder
+    WORKDIR /app
+    COPY --from=deps /app/node_modules ./node_modules
+    COPY . .
+    RUN npx prisma generate
+    RUN npm run build
+
+    # Stage 3: production image
+    FROM node:20-alpine AS runner
+    WORKDIR /app
+    ENV NODE_ENV=production
+
+    COPY --from=builder /app/public ./public
+    COPY --from=builder /app/.next/standalone ./
+    COPY --from=builder /app/.next/static ./.next/static
+    COPY --from=builder /app/prisma ./prisma
+    COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+
+    EXPOSE 3000
+    CMD ["node", "server.js"]
+    ```
+
+    <Note>
+      The standalone output mode requires `output: 'standalone'` in `next.config.ts`. Add it if it is not already present.
+    </Note>
+
+    ### Build the image
+
+    ```bash
+    docker build -t nextly:latest .
+    ```
+
+    ### Run the container
+
+    Pass your environment variables at runtime using `--env-file`:
+
+    ```bash
+    docker run \
+      --env-file .env.production \
+      -p 3000:3000 \
+      nextly:latest
+    ```
+
+    Or pass individual variables with `-e`:
+
+    ```bash
+    docker run \
+      -e DATABASE_URL="postgresql://..." \
+      -e CLERK_SECRET_KEY="sk_live_..." \
+      -p 3000:3000 \
+      nextly:latest
+    ```
+
+    ### Run database migrations
+
+    Before starting the container in production, apply pending migrations:
+
+    ```bash
+    docker run --env-file .env.production nextly:latest \
+      npx prisma migrate deploy
+    ```
+
+    ### Configure the Inngest webhook
+
+    After the container is running and reachable, register your app with Inngest:
+
+    1. Log in to [app.inngest.com](https://app.inngest.com)
+    2. Go to **Apps** → **Add App**
+    3. Enter: `https://your-domain.com/api/inngest`
+    4. Click **Connect**
+  </Tab>
+
+  <Tab title="Node.js">
+    You can serve Nextly from any server or VPS that has Node.js 18+ installed.
+
+    ### 1. Install dependencies
+
+    ```bash
+    npm install
+    ```
+
+    ### 2. Generate the Prisma client and run migrations
+
+    ```bash
+    npx prisma generate
+    npx prisma migrate deploy
+    ```
+
+    ### 3. Build the application
+
+    ```bash
+    npm run build
+    ```
+
+    This runs `next build` and produces an optimized production build in `.next/`.
+
+    ### 4. Start the production server
+
+    ```bash
+    npm start
+    ```
+
+    This runs `next start`, which serves the production build on port 3000 by default.
+
+    To use a different port:
+
+    ```bash
+    PORT=8080 npm start
+    ```
+
+    ### 5. Configure the Inngest webhook
+
+    After the server is running and publicly accessible, register your app:
+
+    1. Log in to [app.inngest.com](https://app.inngest.com)
+    2. Go to **Apps** → **Add App**
+    3. Enter: `https://your-domain.com/api/inngest`
+    4. Click **Connect**
+
+    <Tip>
+      Use a process manager like [PM2](https://pm2.keymetrics.io) or systemd to keep the Node.js process running and restart it automatically on crash or reboot.
+
+      ```bash
+      npm install -g pm2
+      pm2 start npm --name nextly -- start
+      pm2 save
+      ```
+    </Tip>
+  </Tab>
+</Tabs>
+
+---
+
+## Inngest webhook setup
+
+Regardless of deployment method, Inngest must be able to reach your `/api/inngest` endpoint to deliver background job events. The Clerk middleware in Nextly already marks this route as public, so no authentication is required for Inngest's outbound requests.
+
+After connecting your app in the Inngest dashboard, you can verify it is working by:
+
+1. Going to **Apps** in the Inngest dashboard and confirming your app shows as **Connected**
+2. Triggering a generation in Nextly and checking **Runs** in the Inngest dashboard for a `code-agent/run` event
+
+<Note>
+  If you redeploy your application to a new URL, update the app URL in the Inngest dashboard to match. Inngest will fail to deliver events if the endpoint URL is stale.
+</Note>

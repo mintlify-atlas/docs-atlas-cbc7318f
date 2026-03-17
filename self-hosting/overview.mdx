@@ -1,0 +1,52 @@
+---
+title: Self-hosting overview
+description: Run Nextly on your own infrastructure.
+---
+
+Self-hosting Nextly gives you full control over your data, API keys, and compute costs. You run the Next.js application on your own server and connect the required third-party services yourself.
+
+<Note>
+  Clerk, E2B, and Inngest are third-party services, each with their own free tiers and paid plans. You are responsible for any costs those services charge. Review their pricing pages before deploying.
+</Note>
+
+## What self-hosting involves
+
+A production Nextly instance requires:
+
+- **PostgreSQL database** — stores projects, messages, generated code fragments, and rate-limit state
+- **Clerk account** — handles user authentication and session management
+- **E2B account** — provides the isolated sandbox environments where the AI agent writes and runs code
+- **Inngest account** — runs the background job pipeline that processes generation requests durably
+- **AWS credentials** (optional) — used for cloud storage; omit if you are storing files locally or don't need persistent file storage
+
+## Prerequisites
+
+Before you begin, make sure you have:
+
+| Requirement | Notes |
+|---|---|
+| Node.js 18+ | Required. 20 LTS recommended. |
+| npm, yarn, or pnpm | Any package manager works; examples use `npm`. |
+| PostgreSQL | Version 14+. Can be local, managed (Supabase, Neon, RDS), or Docker-based. |
+| Docker | Optional. Useful for running PostgreSQL locally or deploying the app as a container. |
+| Clerk account | Sign up at [clerk.com](https://clerk.com). Free tier available. |
+| E2B account | Sign up at [e2b.dev](https://e2b.dev). Free tier available. |
+| Inngest account | Sign up at [inngest.com](https://inngest.com). Free tier available. |
+| AI provider API key | Nextly uses an OpenAI-compatible API. The default configuration points to OpenRouter. |
+
+## Setup overview
+
+<CardGroup cols={2}>
+  <Card title="Environment variables" icon="key" href="/self-hosting/environment-variables">
+    Configure all required environment variables — database, authentication, AI provider, and third-party services.
+  </Card>
+  <Card title="Database setup" icon="database" href="/self-hosting/database-setup">
+    Create a PostgreSQL database and run Prisma migrations to initialize the schema.
+  </Card>
+  <Card title="Deployment" icon="rocket" href="/self-hosting/deployment">
+    Deploy to Vercel, run with Docker, or serve from a Node.js process.
+  </Card>
+  <Card title="Quickstart" icon="play" href="/quickstart">
+    Learn how Nextly works end-to-end before you self-host.
+  </Card>
+</CardGroup>

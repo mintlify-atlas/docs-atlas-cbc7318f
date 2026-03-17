@@ -1,0 +1,89 @@
+---
+title: "Limitations"
+description: "Current limitations of Nextly during beta"
+---
+
+Nextly is in active beta. The limitations below stem from deliberate architectural trade-offs — free-tier AI models, sandboxed execution environments, and background job infrastructure — rather than fundamental design flaws. Each section explains the technical root cause and a practical workaround.
+
+## Technical limits
+
+These are hard numbers baked into the current implementation.
+
+| Limit | Value | Source |
+|---|---|---|
+| Agent max iterations | 15 | `maxIter` in `createNetwork` (`functions.ts`) |
+| Sandbox timeout | 30 minutes (1,800,000 ms) | `SANDBOX_TIMEOUT = 60_000 * 10 * 3` (`types.ts`) |
+| Message context window | Last 5 messages | `take: 5` query in `get-previous-messages` step |
+| Preview duration | 10–30 minutes | E2B sandbox budget constraint |
+
+---
+
+## Extended processing time
+
+Generation and deployment can take **up to 10 minutes** from the moment you submit a prompt.
+
+**Why it happens:** Code generation runs as an [Inngest](https://inngest.com) background function, not a synchronous HTTP request. The agent can issue up to 15 tool-call iterations — each round-trip to the AI model and the E2B sandbox adds latency. Free-tier models on OpenRouter also enforce rate limits that can introduce queuing delays between iterations.
+
+<Tip>
+  Leave the generation page open in your browser. The UI polls for results automatically, so you do not need to refresh. If you close the tab, the job continues in the background and will be waiting for you when you return to the project.
+</Tip>
+
+---
+
+## Manual review required before production
+
+AI-generated code should always be read and tested before you ship it.
+
+**Why it happens:** The agent works from a natural language description. It cannot know your business rules, your brand guidelines, or edge cases specific to your users. Nextly produces clean, idiomatic code, but intent can still be misinterpreted — especially for vague or ambiguous prompts.
+
+<Tip>
+  Download the generated code and open it in your editor before deploying. Use the example prompts in the README as a guide for writing specific, structured descriptions that leave less room for ambiguity.
+</Tip>
+
+---
+
+## Occasional TypeScript errors
+
+Some generations contain TypeScript or Next.js compilation errors that prevent the app from building.
+
+**Why it happens:** Free-tier models like `x-ai/grok-4-fast:free` occasionally produce type mismatches, missing imports, or incorrect prop usage — particularly for complex Shadcn UI components with strict prop APIs. The agent is instructed to inspect component source files before using them, but this step is not always sufficient.
+
+<Tip>
+  If you see a compilation error in the preview, describe the specific error in a follow-up prompt (e.g. "Fix the TypeScript error on line 42 of `app/page.tsx`"). Iterative correction is usually faster than regenerating from scratch. For complex components, consider switching to the `codex` model, which has stronger type accuracy.
+</Tip>
+
+---
+
+## Preview expires after 10–30 minutes
+
+The live preview URL stops working after 10–30 minutes.
+
+**Why it happens:** Previews are served directly from an [E2B](https://e2b.dev) sandbox. The sandbox timeout is set to **30 minutes** (`SANDBOX_TIMEOUT = 1,800,000 ms`). E2B sandboxes are ephemeral by design — keeping them alive indefinitely would exceed the free-tier budget that makes Nextly free to use.
+
+<Tip>
+  Download your code from the project dashboard as soon as you are happy with the result. The generated files are stored permanently in your `Fragment` record in the database — the sandbox URL expires, but the code does not. You can re-run the generation or deploy the downloaded code to Vercel at any time.
+</Tip>
+
+---
+
+## Rate limits apply
+
+Heavy usage may trigger a cooldown period that temporarily blocks new generations.
+
+**Why it happens:** Nextly uses `rate-limiter-flexible` to protect service stability. Free-tier AI models on OpenRouter also enforce their own upstream rate limits. During peak usage, both layers can trigger simultaneously.
+
+<Tip>
+  If you hit a rate limit, wait a few minutes before retrying. Self-hosting Nextly with a paid OpenRouter key removes the upstream model rate limits and gives you full control over the application-level limits in the source code.
+</Tip>
+
+---
+
+## Best for small-to-medium projects
+
+Nextly excels at landing pages, portfolios, dashboards, and component libraries. Complex enterprise applications are not recommended.
+
+**Why it happens:** The agent operates with a context window of the last 5 messages and a maximum of 15 iterations per run. Large projects with many interdependent files, complex state machines, or deep backend integrations require more context and more iterations than the current architecture supports reliably.
+
+<Tip>
+  Scope each generation to a single feature or page. For larger projects, build in layers — generate the shell first, then add sections one prompt at a time. Avoid asking the agent to redesign the entire app in a single prompt.
+</Tip>

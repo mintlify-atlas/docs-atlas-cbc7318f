@@ -1,0 +1,48 @@
+---
+title: "Tech stack"
+description: "The technologies that power Nextly"
+---
+
+## Nextly platform
+
+The following table lists every major dependency used to build and run the Nextly platform itself, with exact versions sourced from `package.json`.
+
+| Category | Technology | Version | Purpose |
+|---|---|---|---|
+| Framework | Next.js | 15.4.10 | React framework with App Router for modern web applications |
+| Language | TypeScript | ^5 | Type-safe development with enhanced IDE support |
+| Styling | Tailwind CSS | ^4 | Utility-first CSS framework for rapid UI development |
+| Authentication | Clerk (`@clerk/nextjs`) | ^6.32.0 | User management and authentication infrastructure |
+| Database | PostgreSQL | — | Relational database for application data storage |
+| ORM | Prisma (`@prisma/client`) | ^6.12.0 | Type-safe database client and schema management |
+| API Layer | tRPC (`@trpc/server`) | ^11.4.3 | End-to-end type-safe API without code generation |
+| Background Jobs | Inngest | ^3.39.2 | Reliable serverless job processing and workflows |
+| Agent Framework | Inngest Agent Kit (`@inngest/agent-kit`) | ^0.8.3 | Multi-agent orchestration for the code generation pipeline |
+| Code Execution | E2B (`@e2b/code-interpreter`) | ^1.5.1 | Sandboxed environment for secure code execution and live previews |
+| UI Primitives | Radix UI | ^1–^2 (per package) | Accessible, unstyled component primitives |
+| Data Fetching | TanStack React Query (`@tanstack/react-query`) | ^5.83.0 | Async state management and server-state synchronisation |
+| Validation | Zod | ^3.25.76 | Runtime schema validation and type inference |
+| Animation | Framer Motion | ^12.23.13 | Declarative animations and transitions |
+| AI SDK | OpenAI SDK | ^5.23.0 | OpenRouter-compatible client used to call all AI models |
+
+## Generated apps
+
+Every app Nextly produces is scaffolded on a fixed, opinionated stack so you always know what you're getting.
+
+| Technology | Details |
+|---|---|
+| Framework | Next.js 15 with the App Router (`app/` directory) |
+| Language | TypeScript — all files use `.tsx` / `.ts` extensions |
+| Styling | Tailwind CSS v4, configured with PostCSS; **no plain CSS or SCSS files are created** |
+| Component library | Shadcn UI — all components are pre-installed and imported from `@/components/ui/*` |
+| Icons | Lucide React — imported individually (e.g. `import { SunIcon } from "lucide-react"`) |
+| Entry point | `app/page.tsx` — the root page; `"use client"` is added automatically where needed |
+| Layout wrapper | `app/layout.tsx` is pre-defined and wraps all routes; the agent never recreates it |
+
+### Sandbox environment
+
+Generated apps run inside an [E2B](https://e2b.dev) sandbox during the preview phase.
+
+<Note>
+  The sandbox template used is **`vedant-lovable-test-1`**. The Next.js development server starts automatically on **port 3000** with hot reload enabled. The agent never runs `npm run dev`, `npm run build`, or similar commands — the server is already live when the agent begins writing files.
+</Note>

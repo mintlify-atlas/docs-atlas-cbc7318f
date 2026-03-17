@@ -1,97 +1,99 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "Nextly Documentation"
+description: "AI-powered Next.js application generator — transform natural language prompts into production-ready apps in minutes."
 ---
 
-## Setting up
-
-Get your documentation site up and running in minutes.
-
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
-
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Get from prompt to live preview in under 5 minutes.
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="How it works" icon="wand-magic-sparkles" href="/how-it-works">
+    Learn how Nextly's AI agent pipeline generates your code.
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Writing prompts" icon="pen-nib" href="/guides/writing-prompts">
+    Craft effective prompts for better results.
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="Self-hosting" icon="server" href="/self-hosting/overview">
+    Deploy Nextly on your own infrastructure.
   </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
+## What is Nextly?
 
-Everything you need to create world-class documentation.
+Nextly is an open-source, AI-powered tool that turns a natural language description into a complete, runnable **Next.js 15** application — with TypeScript, Tailwind CSS, and Shadcn UI — in one shot. It's the fastest way to prototype web apps without writing boilerplate.
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+<Info>
+  Nextly is currently in **beta**. Generation can take up to 10 minutes on free-tier models. Preview URLs expire after 10–30 minutes — download your code promptly.
+</Info>
 
-## Need inspiration?
+## Key capabilities
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+<CardGroup cols={2}>
+  <Card title="Prompt to code" icon="bolt">
+    Describe any web app in plain English. Nextly generates the complete Next.js project structure — pages, components, and logic.
+  </Card>
+  <Card title="Instant live preview" icon="eye">
+    Every generation deploys automatically to an E2B sandbox. Share a live URL the moment your app is ready.
+  </Card>
+  <Card title="Iterative development" icon="arrows-rotate">
+    Refine your app through follow-up prompts. Add features, adjust layouts, or fix bugs conversationally.
+  </Card>
+  <Card title="Multiple AI models" icon="microchip">
+    Choose between Grok 4, GPT Codex, and Gemini 2.5 Flash depending on your speed and quality preferences.
+  </Card>
+  <Card title="Clean, idiomatic code" icon="code">
+    No AI boilerplate. Generated code follows Next.js App Router conventions, uses proper TypeScript types, and is ready for production review.
+  </Card>
+  <Card title="Open source" icon="github">
+    Fully open source under an MIT-compatible license. Self-host it, fork it, or contribute back.
+  </Card>
+</CardGroup>
+
+## What you can build
+
+Nextly excels at small-to-medium scoped projects. Here are common use cases:
+
+- **Landing pages** — Hero, features, pricing, testimonials, footer sections
+- **Portfolios** — Personal sites with project grids and contact forms
+- **Dashboards** — Admin panels with charts, data tables, and sidebars
+- **Blogs** — Article listings, individual post pages, author info
+- **Auth pages** — Login, sign-up, forgot password flows with validation
+- **E-commerce pages** — Product pages, cart UIs, category listings
+- **Component demos** — Isolated UI components with state and interaction
+
+<Tip>
+  Keep projects focused and well-scoped. Nextly works best when your prompt describes a single, coherent page or feature — not a multi-page enterprise application.
+</Tip>
+
+## Tech stack overview
+
+Nextly itself is built with the same stack it generates apps in:
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 15 with App Router |
+| Language | TypeScript |
+| Styling | Tailwind CSS + Shadcn UI |
+| Auth | Clerk |
+| Database | PostgreSQL + Prisma |
+| API | tRPC |
+| Background jobs | Inngest |
+| Code execution | E2B sandboxes |
+| AI models | Grok 4, GPT Codex, Gemini 2.5 Flash |
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Create your first app" icon="play" href="/quickstart">
+    Follow the quickstart to generate your first Next.js app from a prompt.
+  </Card>
+  <Card title="Understand the pipeline" icon="diagram-project" href="/how-it-works">
+    Dig into how the agentic code generation pipeline works under the hood.
+  </Card>
+  <Card title="Host it yourself" icon="server" href="/self-hosting/overview">
+    Run Nextly on your own infrastructure with full control over models and limits.
+  </Card>
+  <Card title="See example prompts" icon="lightbulb" href="/guides/writing-prompts">
+    Browse real prompt examples for landing pages, dashboards, portfolios, and more.
+  </Card>
+</CardGroup>

@@ -1,0 +1,146 @@
+---
+title: Environment variables
+description: Configure all required environment variables for Nextly.
+---
+
+Nextly reads its configuration from environment variables. Create a `.env` file in the root of the repository before running the development server or building for production.
+
+<Warning>
+  Never commit your `.env` file to version control. Add it to `.gitignore`. Treat every value in this file as a secret.
+</Warning>
+
+## Full `.env` example
+
+```env
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/nextly"
+
+# Authentication (Clerk)
+CLERK_SECRET_KEY="sk_live_..."
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_live_..."
+
+# AI provider
+OPENAI_API_KEY="sk-or-..."
+OPENAI_API_BASE="https://openrouter.ai/api/v1"
+OPENAI_FREE2_MODEL="openai/gpt-oss-120b:free"
+
+# Code execution (E2B)
+E2B_API_KEY="e2b_..."
+
+# Background jobs (Inngest)
+INNGEST_EVENT_KEY="evt_..."
+INNGEST_SIGNING_KEY="signkey-..."
+
+# Storage (AWS — optional)
+AWS_ACCESS_KEY_ID="AKIA..."
+AWS_SECRET_ACCESS_KEY="..."
+```
+
+---
+
+## Database
+
+<ParamField path="DATABASE_URL" type="string" required>
+  PostgreSQL connection string. Prisma uses this to connect to your database and run migrations.
+
+  **Format:** `postgresql://USER:PASSWORD@HOST:PORT/DATABASE`
+
+  **Example:** `postgresql://postgres:secret@localhost:5432/nextly`
+
+  Managed database providers like [Neon](https://neon.tech), [Supabase](https://supabase.com), and [Railway](https://railway.app) will give you a connection string directly from their dashboards.
+</ParamField>
+
+---
+
+## Authentication
+
+Nextly uses [Clerk](https://clerk.com) for user management. Both keys come from the **API Keys** section of your Clerk application dashboard.
+
+<ParamField path="CLERK_SECRET_KEY" type="string" required>
+  Secret key for server-side Clerk API calls. Starts with `sk_live_` in production or `sk_test_` in development.
+
+  Keep this value private — it must never be exposed to the browser.
+</ParamField>
+
+<ParamField path="NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" type="string" required>
+  Publishable key for the Clerk frontend SDK. Starts with `pk_live_` in production or `pk_test_` in development.
+
+  This value is safe to expose in the browser — it is embedded in the client-side bundle.
+</ParamField>
+
+---
+
+## AI models
+
+Nextly uses an OpenAI-compatible API for all code generation. The default configuration targets [OpenRouter](https://openrouter.ai), which lets you route requests to many models (Grok, GPT, Gemini, and others) through a single endpoint and API key.
+
+<ParamField path="OPENAI_API_KEY" type="string" required>
+  API key for the AI provider. When using OpenRouter, this is your OpenRouter API key (starts with `sk-or-`).
+
+  This key is used by both the primary code-generation agent and the secondary title/response generators.
+</ParamField>
+
+<ParamField path="OPENAI_API_BASE" type="string" required>
+  Base URL for the AI provider API. Set this to your provider's endpoint.
+
+  **OpenRouter:** `https://openrouter.ai/api/v1`
+
+  If you want to use OpenAI directly, set this to `https://api.openai.com/v1` and update your model IDs accordingly.
+</ParamField>
+
+<ParamField path="OPENAI_FREE2_MODEL" type="string">
+  Model ID used for the lightweight secondary agents: the fragment title generator and the response generator. These do not require a high-capability model.
+
+  **Default if unset:** `openai/gpt-oss-120b:free`
+
+  **Example values:**
+  - `openai/gpt-oss-120b:free` — free-tier model on OpenRouter
+  - `openai/gpt-4o-mini` — fast and cheap
+  - `google/gemini-flash-1.5` — strong at structured text
+</ParamField>
+
+---
+
+## Code execution
+
+<ParamField path="E2B_API_KEY" type="string" required>
+  API key for [E2B](https://e2b.dev). E2B provides the isolated sandbox environments where the AI agent writes, runs, and previews generated Next.js code.
+
+  Find your API key in the E2B dashboard under **Account → API Keys**.
+</ParamField>
+
+---
+
+## Background jobs
+
+Nextly uses [Inngest](https://inngest.com) to run the code-generation pipeline as a durable background job. Both keys come from your Inngest app dashboard.
+
+<ParamField path="INNGEST_EVENT_KEY" type="string" required>
+  Event key used to send events to Inngest from your application. Nextly fires a `code-agent/run` event for every generation request.
+
+  Find this under **Manage → Event Keys** in your Inngest dashboard.
+</ParamField>
+
+<ParamField path="INNGEST_SIGNING_KEY" type="string" required>
+  Signing key that Inngest uses to verify webhook payloads delivered to your `/api/inngest` endpoint.
+
+  Find this under **Manage → Signing Key** in your Inngest dashboard.
+</ParamField>
+
+---
+
+## Storage
+
+AWS credentials are optional. They are used if your deployment requires file storage through AWS S3 or a compatible service.
+
+<ParamField path="AWS_ACCESS_KEY_ID" type="string">
+  AWS IAM access key ID. Required if you are using AWS S3 for file storage.
+
+  Generate this from the **IAM → Security credentials** section of the AWS Management Console.
+</ParamField>
+
+<ParamField path="AWS_SECRET_ACCESS_KEY" type="string">
+  AWS IAM secret access key. Required alongside `AWS_ACCESS_KEY_ID`.
+
+  This value is shown only once when you create the access key. Store it immediately in your secrets manager or `.env` file.
+</ParamField>
